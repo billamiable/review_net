@@ -1,4 +1,4 @@
-
+-- here the main task is word embedding --- transforming words into multi-dimensional vectors
 local data = {}
 
 data.CODE_TRUNCATE = 300 -- 300
@@ -54,6 +54,7 @@ end
 
 function data.prepare_data(filename, token2index, word_cnt)
     local seq_data = {}
+    -- input data with code and comment in order
     for line in io.open(filename):lines() do
         local inputs = data.string_split(line, '\t')
         local code_seq, comment_seq = data.string_split(inputs[1]), data.string_split(inputs[2])
@@ -77,10 +78,13 @@ function data.prepare_data(filename, token2index, word_cnt)
         -- comment matrix: EOS + code seq
         -- comment next: code seq + EOS
         -- mask indices correspond to "matrix"
+        
+        -- using torch.Tensor to transform into multi-dimensional matrix
         local code_matrix, comment_matrix = torch.Tensor(t_size, max_code_len):fill(data.EOS_NUM), torch.Tensor(t_size, max_comment_len):fill(data.EOS_NUM)
         local code_mask, comment_mask = torch.Tensor(t_size, max_code_len):zero(), torch.Tensor(t_size, max_comment_len):zero()
         local comment_next = torch.Tensor(t_size, max_comment_len):fill(data.EOS_NUM)
         local word_label = torch.Tensor(t_size, word_cnt):zero()
+        
         for k = i, j do
             local word_dict = {}
             local t_code_len = math.min(#seq_data[k].code_seq, max_code_len)
